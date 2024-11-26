@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_USER = 'miusuario'  // Asegúrate de que el nombre de usuario de Docker Hub esté aquí
+        DOCKER_USER = 'fernanbeast'  // Asegúrate de que el nombre de usuario de Docker Hub esté aquí
     }
     stages {
         stage('Clonar Repositorio') {
