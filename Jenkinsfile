@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_USER = 'fernanbeast'  // Tu nombre de usuario de Docker Hub
-        DOCKER_BUILDX = 'mybuilder'  // Nombre del builder de Buildx
+        DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
     }
     stages {
         stage('Clonar Repositorio') {
