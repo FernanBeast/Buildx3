@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clonar Repositorio') {
             steps {
-                git 'https://github.com/usuario/repositorio.git'
+                git 'https://github.com/FernanBeast/Buildx3.git'
             }
         }
         stage('Construir Imagen Docker') {
@@ -16,7 +16,7 @@ pipeline {
         stage('Subir Imagen a Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials2') {
                         docker.image('miusuario/mi-imagen').push('latest')
                     }
                 }
