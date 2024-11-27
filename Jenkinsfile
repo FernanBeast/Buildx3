@@ -1,29 +1,30 @@
 pipeline {
     agent any
     environment {
-        DOCKER_USER = 'fernanbeast'  // Tu nombre de usuario de Docker Hub
-        DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
-        SONARQUBE = 'SonarQubeLocal'  // Nombre del servidor de SonarQube configurado en Jenkins
+        DOCKER_USER = 'fernanbeast'  // Your Docker Hub username
+        DOCKER_BUILDX = 'docker-buildx-builder'  // Name of the Buildx builder
+        SONARQUBE = 'SonarQubeLocal'  // Name of the SonarQube server configured in Jenkins
+        SONARQUBE_TOKEN = credentials('sonarqube-token-id')  // SonarQube token for authentication
     }
     stages {
         stage('Clonar Repositorio') {
             steps {
-                // Clonando el repositorio de GitHub, usando credenciales si es privado
+                // Cloning the repository from GitHub using credentials if private
                 git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'github-credentials-id'
             }
         }
         stage('SonarQube Análisis') {
             steps {
                 script {
-                    // Configurar y ejecutar el análisis de SonarQube
-                    def scannerHome = tool 'SonarQube Scanner'  // Este es el nombre del scanner configurado en Jenkins
-                    withSonarQubeEnv(SONARQUBE) {  // Usa la configuración de SonarQube que has establecido en Jenkins
+                    // Configure and run SonarQube analysis
+                    def scannerHome = tool 'SonarQube Scanner'  // The name of the scanner configured in Jenkins
+                    withSonarQubeEnv(SONARQUBE) {  // Use the SonarQube configuration set in Jenkins
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                                 -Dsonar.projectKey=mi-proyecto \
                                 -Dsonar.sources=src \
                                 -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.login=${SONARQUBE_TOKEN}  // Si necesitas token de autenticación
+                                -Dsonar.login=${SONARQUBE_TOKEN}  // Authentication token
                         """
                     }
                 }
@@ -32,9 +33,8 @@ pipeline {
         stage('Configurar Docker Buildx') {
             steps {
                 script {
-                    // Crear un builder si no existe, y configurarlo para usarlo
+                    // Create a Buildx builder if it doesn't exist and configure it for use
                     sh '''
-                        # Verifica si el builder ya está creado, si no lo crea
                         docker buildx ls | grep -q ${DOCKER_BUILDX} || docker buildx create --name ${DOCKER_BUILDX} --use
                     '''
                 }
@@ -43,7 +43,7 @@ pipeline {
         stage('Construir Imagen Docker usando Buildx') {
             steps {
                 script {
-                    // Construir la imagen Docker usando Buildx
+                    // Build the Docker image using Buildx
                     sh '''
                         docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
                     '''
@@ -53,17 +53,20 @@ pipeline {
         stage('Subir Imagen a Docker Hub') {
             steps {
                 script {
-                    // Subir la imagen a Docker Hub usando Buildx
-                    sh '''
-                        docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
-                    '''
+                    // Log in to Docker Hub and push the image using Buildx
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                            echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+                            docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
+                        '''
+                    }
                 }
             }
         }
     }
     post {
         always {
-            // Limpiar el espacio de trabajo al final del pipeline
+            // Clean up workspace after the pipeline finishes
             cleanWs()
         }
     }
