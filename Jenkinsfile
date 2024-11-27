@@ -10,7 +10,7 @@ pipeline {
         stage('Clonar Repositorio') {
             steps {
                 // Cloning the repository from GitHub using credentials if private
-                git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'github-credentials-id'
+                git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'GitHub_Credentials'
             }
         }
         stage('SonarQube Análisis') {
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 script {
                     // Log in to Docker Hub and push the image using Buildx
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
                             echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
                             docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
