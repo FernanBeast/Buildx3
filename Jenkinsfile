@@ -1,20 +1,20 @@
 pipeline {
     agent any
     environment {
-        DOCKER_USER = 'fernanbeast'  // Tu nombre de usuario de Docker Hub
-        DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
+        DOCKER_USER = 'fernanbeast'  
+        DOCKER_BUILDX = 'docker-buildx-builder'  
     }
     stages {
         stage('Clonar Repositorio') {
             steps {
-                // Clonando el repositorio de GitHub, usando credenciales si es privado
+                // Clonando el repositorio de GitHub, usando credenciales
                 git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'github-credentials-id'
             }
         }
         stage('Configurar Docker Buildx') {
             steps {
                 script {
-                    // Crear un builder si no existe, y configurarlo para usarlo
+                    
                     sh '''
                         # Verifica si el builder ya está creado, si no lo crea
                         docker buildx ls | grep -q ${DOCKER_BUILDX} || docker buildx create --name ${DOCKER_BUILDX} --use
@@ -45,7 +45,7 @@ pipeline {
     }
     post {
         always {
-            // Limpiar el espacio de trabajo al final del pipeline
+           
             cleanWs()
         }
     }
