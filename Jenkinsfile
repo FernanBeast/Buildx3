@@ -5,35 +5,9 @@ pipeline {
         DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
     }
     stages {
-        stage('Preparar Entorno') {
-            steps {
-                script {
-                    // Verificar e instalar Docker y Buildx si es necesario
-                    sh '''
-                        # Verificar si Docker está instalado; si no, instalarlo
-                        if ! command -v docker &> /dev/null; then
-                            echo "Docker no encontrado, instalando..."
-                            sudo apt-get update
-                            sudo apt-get install -y docker.io
-                            sudo systemctl start docker
-                            sudo systemctl enable docker
-                        else
-                            echo "Docker ya está instalado."
-                        fi
-
-                        # Verificar si Buildx está instalado; si no, instalarlo
-                        if ! docker buildx version &> /dev/null; then
-                            echo "Buildx no encontrado, instalando..."
-                            sudo apt-get install -y docker-buildx-plugin
-                        else
-                            echo "Buildx ya está instalado."
-                        fi
-                    '''
-                }
-            }
-        }
         stage('Clonar Repositorio') {
             steps {
+                // Clonando el repositorio de GitHub, usando credenciales si es privado
                 git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'github-credentials-id'
             }
         }
@@ -42,6 +16,7 @@ pipeline {
                 script {
                     // Crear un builder si no existe, y configurarlo para usarlo
                     sh '''
+                        # Verifica si el builder ya está creado, si no lo crea
                         docker buildx ls | grep -q ${DOCKER_BUILDX} || docker buildx create --name ${DOCKER_BUILDX} --use
                     '''
                 }
@@ -50,6 +25,7 @@ pipeline {
         stage('Construir Imagen Docker usando Buildx') {
             steps {
                 script {
+                    // Construir la imagen Docker usando Buildx
                     sh '''
                         docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
                     '''
@@ -59,6 +35,7 @@ pipeline {
         stage('Subir Imagen a Docker Hub') {
             steps {
                 script {
+                    // Subir la imagen a Docker Hub usando Buildx
                     sh '''
                         docker buildx build --push --platform linux/amd64,linux/arm64 -t ${DOCKER_USER}/mi-imagen:latest .
                     '''
@@ -68,8 +45,8 @@ pipeline {
     }
     post {
         always {
+            // Limpiar el espacio de trabajo al final del pipeline
             cleanWs()
         }
     }
 }
-
