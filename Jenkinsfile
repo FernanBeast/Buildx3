@@ -4,7 +4,7 @@ pipeline {
         DOCKER_USER = 'fernanbeast'  // Tu nombre de usuario de Docker Hub
         DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
         SONARQUBE = 'SonarQubeLocal'  // Nombre del servidor de SonarQube configurado en Jenkins
-        SONARQUBE_TOKEN = credentials('sonar-token')  // Credenciales de SonarQube (token de autenticación)
+        SONARQUBE_TOKEN = credentials('SONARQUBE_TOKEN')  // Credenciales de SonarQube (token de autenticación)
     }
     stages {
         stage('Clonar Repositorio') {
@@ -64,8 +64,10 @@ pipeline {
     }
     post {
         always {
-            // Limpiar el espacio de trabajo al final del pipeline
-            cleanWs()
+            // Asegúrate de que cleanWs esté dentro de un bloque 'node'
+            node {
+                cleanWs()  // Limpiar el espacio de trabajo al final del pipeline
+            }
         }
     }
 }
