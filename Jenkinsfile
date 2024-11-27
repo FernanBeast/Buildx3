@@ -3,12 +3,31 @@ pipeline {
     environment {
         DOCKER_USER = 'fernanbeast'  // Tu nombre de usuario de Docker Hub
         DOCKER_BUILDX = 'docker-buildx-builder'  // Nombre del builder de Buildx
+        SONARQUBE = 'SonarQubeLocal'  // Nombre del servidor de SonarQube configurado en Jenkins
+        SONARQUBE_TOKEN = credentials('sonar-token')  // Credenciales de SonarQube (token de autenticación)
     }
     stages {
         stage('Clonar Repositorio') {
             steps {
                 // Clonando el repositorio de GitHub, usando credenciales si es privado
                 git branch: 'main', url: 'https://github.com/FernanBeast/Buildx3.git', credentialsId: 'github-credentials-id'
+            }
+        }
+        stage('SonarQube Análisis') {
+            steps {
+                script {
+                    // Configurar y ejecutar el análisis de SonarQube
+                    def scannerHome = tool 'SonarQube Scanner'  // Este es el nombre del scanner configurado en Jenkins
+                    withSonarQubeEnv(SONARQUBE) {  // Usa la configuración de SonarQube que has establecido en Jenkins
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=mi-proyecto \
+                                -Dsonar.sources=src \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${SONARQUBE_TOKEN}  // Si necesitas token de autenticación
+                        """
+                    }
+                }
             }
         }
         stage('Configurar Docker Buildx') {
