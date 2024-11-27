@@ -64,10 +64,8 @@ pipeline {
     }
     post {
         always {
-            // Asegúrate de que cleanWs esté dentro de un bloque 'node'
-            node {
-                cleanWs()  // Limpiar el espacio de trabajo al final del pipeline
-            }
+            // Limpiar el espacio de trabajo al final del pipeline
+            cleanWs()  
         }
     }
 }
